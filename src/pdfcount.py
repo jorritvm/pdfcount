@@ -1,9 +1,11 @@
-from PyQt5.QtWidgets import *
-import PyPDF2
-
 import os
 import os.path
 import sys
+
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QIcon
+from pyprojroot import here
+import PyPDF2
 
 from resources.uipy.gui import *
 
@@ -103,6 +105,7 @@ def is_pdf(f):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon(str(here('doc/pdf.ico'))))
     ui = MainWindow()
     ui.show()
     sys.exit(app.exec_())

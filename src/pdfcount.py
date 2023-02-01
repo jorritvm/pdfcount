@@ -54,7 +54,6 @@ class MainWindow(QMainWindow, Ui_pdfcount):
 
         sum = 0
         for i in range(self.tblFiles.rowCount()):
-            print(self.tblFiles.item(i, 0).text())
             if self.tblFiles.item(i, 2).text() == "":
                 with open(self.tblFiles.item(i, 0).f, 'rb') as file:
                     pdfReader = PyPDF2.PdfReader(file)

@@ -12,5 +12,6 @@ pip install -r requirements.txt
 
 ## How to package it
 ```
-pyinstaller main.spec
+pyinstaller pdfcount.spec
+
 ```

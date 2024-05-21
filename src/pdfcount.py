@@ -74,14 +74,86 @@ class MainWindow(QMainWindow, Ui_pdfcount):
             # add cumulative sum to line as well
             self.tblFiles.item(i, 3).setText(str(count_total))
 
+    def createDataFrame(self):
+        # Get the number of rows and columns
+        row_count = self.tblFiles.rowCount()
+        column_count = self.tblFiles.columnCount()
+
+        # early break
+        if row_count == 0:
+            return None
+
+        # Create an empty list to hold the data
+        data = []
+
+        # Loop through the cells and extract the data
+        for row in range(row_count):
+            row_data = []
+            for column in range(column_count):
+                item = self.tblFiles.item(row, column)
+                if item is not None:
+                    row_data.append(item.text())
+                else:
+                    row_data.append('')  # If the cell is empty, append an empty string
+            data.append(row_data)
+
+        # Create a pandas DataFrame using the extracted data
+        df = pd.DataFrame(data)
+
+        # Change the datatypes of the 3rd and 4th column to integer
+        df.iloc[:, 2] = df.iloc[:, 2].astype(int)
+        df.iloc[:, 3] = df.iloc[:, 3].astype(int)
+
+        # Optionally, set the column headers
+        headers = []
+        for column in range(column_count):
+            header_item = self.tblFiles.horizontalHeaderItem(column)
+            if header_item is not None:
+                headers.append(header_item.text())
+            else:
+                headers.append(f'Column {column+1}')  # Default header name if not set
+
+        df.columns = headers
+
+        return df
+
     def saveCount(self):
-        pass
+        # get the dataframe
+        df = self.createDataFrame()
+        if df is None:
+            return
+        print(df)
+
+        # get the path
+        path_file_one = self.tblFiles.item(0,0).getDir()
+        path_final = QFileDialog.getExistingDirectory(self, "Select folder", path_file_one)
+        if path_final is None:
+            return
+        print(path_final)
+
+        # Define the filename and full path to save the Excel file
+        filename = 'count.xlsx'
+        full_path = os.path.join(path_final, filename)
+        print(full_path)
+
+        try:
+            # Save the DataFrame as an Excel file
+            df.to_excel(full_path, index=False)
+
+            # Show a message box to inform the user that the file was saved successfully
+            QMessageBox.information(self, 'Success', f'File saved successfully at {full_path}')
+        except Exception as e:
+            # Show an error message box if there was an error saving the file
+            QMessageBox.critical(self, 'Error', f'Failed to save file: {str(e)}')
 
 
 class FileItem(QTableWidgetItem):
     def __init__(self, f):
         super().__init__(os.path.basename(f))
         self.f = f
+
+    def getDir(self):
+        return os.path.dirname(self.f)
 
 
 def get_size(path):

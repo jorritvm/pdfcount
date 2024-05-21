@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
 from pyprojroot import here
 import PyPDF2
+import pandas as pd
 
 from resources.uipy.gui import *
 
@@ -19,15 +20,18 @@ class MainWindow(QMainWindow, Ui_pdfcount):
         self.setupTable()
 
     def setupTable(self):
+        """ Modify the central table layout """
         self.tblFiles.clear()
-        self.tblFiles.setRowCount(0);
-        self.tblFiles.setColumnCount(3);
-        self.tblFiles.setHorizontalHeaderLabels(['File', 'Size', 'Pages'])
-        self.tblFiles.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch) # stretch files column
+        self.tblFiles.setRowCount(0)
+        self.tblFiles.setColumnCount(4)
+        self.tblFiles.setHorizontalHeaderLabels(['File', 'Size', 'Pages', 'Cumul'])
+        self.tblFiles.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)  # stretch files column
 
     def setupSlots(self):
+        """ Connect the buttons to the callback functions """
         self.btnWipe.clicked.connect(self.setupTable)
         self.btnCount.clicked.connect(self.countPages)
+        self.btnSave.clicked.connect(self.saveCount)
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
@@ -36,12 +40,15 @@ class MainWindow(QMainWindow, Ui_pdfcount):
             event.ignore()
 
     def dropEvent(self, event):
+        """ Hand of dropping of selected file onto central table widget """
         files = [u.toLocalFile() for u in event.mimeData().urls()]
         for f in files:
             self.addFileToTable(f)
 
     def addFileToTable(self, f):
-        if not is_pdf(f): return
+        """ Add a file to the table (f is a file path)"""
+        if not is_pdf(f):
+            return
 
         self.removeTotalsRow()
 
@@ -50,34 +57,43 @@ class MainWindow(QMainWindow, Ui_pdfcount):
         self.tblFiles.setItem(r, 0, FileItem(f))
         self.tblFiles.setItem(r, 1, QTableWidgetItem(get_size(f)))
         self.tblFiles.setItem(r, 2, QTableWidgetItem(""))
+        self.tblFiles.setItem(r, 3, QTableWidgetItem(""))
 
     def countPages(self):
+        """ Count the number of pages in the desired pdfs """
         self.removeTotalsRow()
 
-        sum = 0
+        count_total = 0
         for i in range(self.tblFiles.rowCount()):
             if self.tblFiles.item(i, 2).text() == "":
+                # first time counting this file, open it and count it
                 with open(self.tblFiles.item(i, 0).f, 'rb') as file:
                     pdfReader = PyPDF2.PdfReader(file)
                     count = len(pdfReader.pages)
                     self.tblFiles.item(i, 2).setText(str(count))
-                sum = sum + count
+                count_total = count_total + count
             else:
-                sum = sum + int(self.tblFiles.item(i, 2).text())
+                # file already counted, just take previous value
+                count_total = count_total + int(self.tblFiles.item(i, 2).text())
+            # add cumulative sum to line as well
+            self.tblFiles.item(i, 3).setText(str(count_total))
 
-        self.addTotalsRow(sum)
+        self.addTotalsRow(count_total)
 
-    def addTotalsRow(self, sum):
+    def addTotalsRow(self, count_total):
         r = self.tblFiles.rowCount()
         self.tblFiles.setRowCount(r + 1)
         self.tblFiles.setItem(r, 0, QTableWidgetItem("Total:"))
-        self.tblFiles.setItem(r, 2, QTableWidgetItem(str(sum)))
+        self.tblFiles.setItem(r, 2, QTableWidgetItem(str(count_total)))
 
     def removeTotalsRow(self):
         r = self.tblFiles.rowCount()
         if r > 0:
             if self.tblFiles.item(r-1, 0).text() == "Total:":
                 self.tblFiles.removeRow(r-1)
+
+    def saveCount(self):
+        pass
 
 
 class FileItem(QTableWidgetItem):

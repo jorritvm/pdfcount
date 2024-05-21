@@ -50,8 +50,6 @@ class MainWindow(QMainWindow, Ui_pdfcount):
         if not is_pdf(f):
             return
 
-        self.removeTotalsRow()
-
         r = self.tblFiles.rowCount()
         self.tblFiles.setRowCount(r + 1)
         self.tblFiles.setItem(r, 0, FileItem(f))
@@ -61,8 +59,6 @@ class MainWindow(QMainWindow, Ui_pdfcount):
 
     def countPages(self):
         """ Count the number of pages in the desired pdfs """
-        self.removeTotalsRow()
-
         count_total = 0
         for i in range(self.tblFiles.rowCount()):
             if self.tblFiles.item(i, 2).text() == "":
@@ -77,20 +73,6 @@ class MainWindow(QMainWindow, Ui_pdfcount):
                 count_total = count_total + int(self.tblFiles.item(i, 2).text())
             # add cumulative sum to line as well
             self.tblFiles.item(i, 3).setText(str(count_total))
-
-        self.addTotalsRow(count_total)
-
-    def addTotalsRow(self, count_total):
-        r = self.tblFiles.rowCount()
-        self.tblFiles.setRowCount(r + 1)
-        self.tblFiles.setItem(r, 0, QTableWidgetItem("Total:"))
-        self.tblFiles.setItem(r, 2, QTableWidgetItem(str(count_total)))
-
-    def removeTotalsRow(self):
-        r = self.tblFiles.rowCount()
-        if r > 0:
-            if self.tblFiles.item(r-1, 0).text() == "Total:":
-                self.tblFiles.removeRow(r-1)
 
     def saveCount(self):
         pass

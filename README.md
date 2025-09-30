@@ -2,7 +2,7 @@
 Small app to count the pages in a large number of PDF files
 
 ## Screenshot
-[<img src="doc/screenshot_latest.png" width="300"/>](doc/screenshot.png)
+[<img src="doc/screenshot_latest.png" width="300"/>](doc/screenshot_latest.png)
 
 ## How to set up the dev environment
 ```
